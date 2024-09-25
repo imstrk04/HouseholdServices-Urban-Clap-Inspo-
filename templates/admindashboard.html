@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-HoA2wqJYjtoAgmL4VVqM0aO/qO7JdU6zl3hZ3glKhbGhxl5JqE49ZHG6nLkqI2SA" crossorigin="anonymous"></script>
+    <title>Admin Dashboard</title>
+    <style>
+        .navbar-nav {
+            margin-left: auto; /* Aligns navigation items to the right */
+        }
+        .container-fluid {
+            padding-left: 2rem;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container-fluid">
+          <a class="navbar-brand" href="#">Welcome to Admin</a>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+            <div class="navbar-nav">
+              <a class="nav-link active" aria-current="page" href="#">Home</a>
+              <a class="nav-link" href="#">Search</a>
+              <a class="nav-link" href="#">Summary</a>
+              <a class="nav-link" href="{{ url_for('logout') }}">Logout</a>
+            </div>
+          </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <h4 style="text-align: center;">Admin Dashboard details are below</h4>
+        <div class="row">
+            <div class="col-md-12">
+                <h5>Services</h5> 
+                
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Service Name</th>
+                            <th>Base Price</th>
+                            <th>Time Required (in hours)</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for service in services %}
+                        <tr>
+                            <td>{{ service.service_id }}</td>
+                            <td>{{ service.name }}</td>
+                            <td style="text-align: center;">{{ service.base_price }}</td>
+                            <td style="text-align: center;">{{ service.time_required }}</td>
+                            <td>
+                                <form action="{{ url_for('edit_service', id=service.service_id) }}" method="POST" style="display:inline;">
+                                    <input type="text" name="name" value="{{ service.name }}" placeholder="name" required>
+                                    <input type="number" name="time_required" value="{{ service.time_required }}" placeholder="timing" required>
+                                    <input type="number" name="base_price" value="{{ service.base_price }}" placeholder="base_price" required>
+                                    <button type="submit" class="btn btn-secondary">Edit</button>
+                                </form>
+                                <form action="{{ url_for('delete_service', id=service.service_id) }}" method="POST" style="display:inline;">
+                                    <button type="submit" class="btn btn-danger">Delete</button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="4">No services found</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                <form action="{{ url_for('add_new_service')}}" method="POST" style="text-align: right;">
+                    <input type="text" name = "new_name" placeholder="new_name" required>
+                    <input type="number" name = "new_base_price" placeholder="new_base_price" required>
+                    <input type="number" name = "new_time_required" placeholder="new_time_required" required>
+                    <input type="text" name = "new_description" placeholder="new_description" required>
+                    <button type="submit" class="btn btn-primary">+ New Service</button>
+                </form> 
+
+        </div>
+
+            <div class="col-md-12">
+                <h5>Customers</h5>
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Email</th>
+                            <th>Full Name</th>
+                            <th>Address</th>
+                            <th>Pincode</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for customer in customers %}
+                        <tr>
+                            <td>{{ customer.id }}</td>
+                            <td>{{ customer.email }}</td>
+                            <td>{{ customer.full_name }}</td>
+                            <td>{{ customer.address }}</td>
+                            <td>{{ customer.pincode }}</td>
+                            <td>
+                                <form action="{{ url_for('block_customer', id=customer.id) }}" method="POST" style="display:inline;">
+                                    <button type="submit" class="btn btn-danger">Block</button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="5">No Customers found</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="col-md-12">
+                <h5>Professionals</h5>
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Full Name</th>
+                            <th>Experience (Years)</th>
+                            <th>Service Name</th>
+                            <th>Profile Document</th>
+                            <th>Address</th>
+                            <th>Pincode</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for professional in professionals %}
+                        <tr>
+                            <td>{{ professional.id }}</td>
+                            <td>{{ professional.full_name }}</td>
+                            <td>{{ professional.experience }}</td>
+                            <td>{{ professional.service.name }}</td>
+                            <td>
+                                {% if professional.profile_doc %}
+                                    {% if professional.profile_doc.endswith('.pdf') %}
+                                        <a href="{{ url_for('uploaded_file', filename=professional.profile_doc) }}" target="_blank">
+                                            View PDF
+                                        </a>
+                                    {% endif %}
+                                {% else %}
+                                    No Document
+                                {% endif %}
+                            </td>
+                            <td>{{ professional.address }}</td>
+                            <td>{{ professional.pincode }}</td>
+                            <td>
+                                <div class="btn-group" role="group" aria-label="Basic mixed styles example">
+                                    {% if professional.status == 'requested' %}
+                                        <form action="{{ url_for('approve_professional', id=professional.id) }}" method="POST" style="display:inline;">
+                                            <button type="submit" class="btn btn-success">Approve</button>
+                                        </form>
+                                        <form action="{{ url_for('reject_professional', id=professional.id) }}" method="POST" style="display:inline;">
+                                            <button type="submit" class="btn btn-danger">Rejected</button>
+                                        </form>
+                                        <form action="{{ url_for('delete_professional', id=professional.id) }}" method="POST" style="display:inline;">
+                                            <button type="submit" class="btn btn-warning">Delete</button>
+                                        </form>
+                                    {% elif professional.status == 'accepted' %}
+                                        <span class="badge bg-success">Approved</span>
+                                    {% elif professional.status == 'rejected' %}
+                                        <span class="badge bg-danger">Rejected</span>
+                                    {% else %}
+                                        <span class="badge bg-info">{{ professional.status.title() }}</span>
+                                    {% endif %}
+                                </div>
+                            </td>
+                            
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="5">No professionals found</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="col-md-12">
+                <h5>Service Requests</h5>
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Assigned Professional</th>
+                            <th>For customer</th>
+                            <th>Problem</th>
+                            <th>Requested Date</th>
+                            <th>Assign</th>
+                            <th>Status (R/A/C)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for request in service_requests %}
+                        <tr>
+                            <td>{{ request.serv_req_id }}</td>
+                            <td>{% if request.professional.status == 'accepted' %} {{ request.professional.full_name }} {% else %} Not Assigned {% endif %}</td>
+                            <td>{% if request.customer %} {{ request.customer.full_name }} {% else %} Not Assigned {% endif %}</td>
+                            <td>{{ request.remarks }}</td>
+                            <td>{{ request.date_of_req.strftime('%Y-%m-%d') }}</td>
+                            <td>
+                                {% if request.professional.status == 'accepted' %}
+                                    <span class="badge bg-success">Assigned to {{ request.professional.full_name }}</span>
+                                {% else %}
+                                    <form action="{{ url_for('assign_professional', request_id=request.serv_req_id) }}" method="POST">
+                                        <button type="submit" class="btn btn-primary">Assign</button>
+                                    </form>
+                                {% endif %}
+                            </td>                            
+                            <td>{{ request.service_status.title() }}</td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="4">No service requests found</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-HoA2wqJYjtoAgmL4VVqM0aO/qO7JdU6zl3hZ3glKhbGhxl5JqE49ZHG6nLkqI2SA" crossorigin="anonymous"></script>
+</body>
+</html>
