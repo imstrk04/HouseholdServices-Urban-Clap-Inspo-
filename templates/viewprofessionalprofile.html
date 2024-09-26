@@ -36,46 +36,14 @@
                         </tr>
                         <tr>
                             <th scope="row">Ratings</th>
-                            <td>
-                                {% if average_rating %}
-                                    <span class="badge bg-success">Avg Rating: {{ average_rating | round(1) }} / 5</span>
-                                {% else %}
-                                    <span class="badge bg-warning">No Ratings</span>
-                                {% endif %}
-                            </td>
+                            <td>{{ professional.average_rating | round(1) }} / 5</td>
                         </tr>                        
                     </tbody>
                 </table>
             </div>
-        </div>
-        <div class="card mt-4"></div>
-            <div class="card-body">
-                <h5 class="card-title">Detailed Ratings</h5>
-                {% if ratings %}
-                    <ul class="list-group">
-                        {% for rating in ratings %}
-                            <li class="list-group-item">
-                                <strong>Customer:</strong> {{ rating.customer.full_name }}
-                                <br>
-                                <strong>Service:</strong> {{ rating.service_request.remarks }}
-                                <br>
-                                <strong>Rating:</strong> {{ rating.rating }} / 5
-                                <br>
-                                <strong>Review:</strong> {{ rating.review }}
-                                <br>
-                            </li>
-                        {% endfor %}
-                    </ul>
-                {% else %}
-                    <p>No ratings available for this professional.</p>
-                {% endif %}
-            </div>
-        </div>
-
 
         <div class="mt-4 text-center">
-            <a href="{{ url_for('editspprofile', id=professional.id) }}" class="btn btn-primary">Edit Profile</a>
-            <a href="{{ url_for('sphomepage', id=professional_id) }}" class="btn btn-primary">Back to Home</a>
+            <a href="{{ url_for('admindashboard') }}" class="btn btn-primary">Back to Dashboard</a>
         </div>
     </div>
 </body>

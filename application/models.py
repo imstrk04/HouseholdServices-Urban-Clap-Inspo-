@@ -30,8 +30,16 @@ class ServiceProfessional(db.Model):
     pincode = db.Column(db.String(10), nullable=False)
     date_created = db.Column(db.DateTime, default=date.today())
     status = db.Column(db.String(50), nullable=False)
-    
+
     service = db.relationship('Service', backref='service_professionals', lazy=True)
+    
+    @property
+    def average_rating(self):
+        # Calculate the average rating from the associated ratings
+        ratings = Rating.query.filter_by(professional_id=self.id).all()
+        if ratings:
+            return sum(r.rating for r in ratings) / len(ratings)
+        return 0.0
 
 class Service(db.Model):
     __tablename__ = 'services'
@@ -61,7 +69,6 @@ class ServiceRequest(db.Model):
     # Relationship to Customer
     customer = db.relationship('Customer', backref='service_requests', lazy=True)
 
-
 class Rating(db.Model):
     __tablename__ = 'ratings'
     
@@ -69,10 +76,12 @@ class Rating(db.Model):
     service_id = db.Column(db.Integer, db.ForeignKey('services.service_id'), nullable=False)
     professional_id = db.Column(db.Integer, db.ForeignKey('service_professionals.id'), nullable=False)
     customer_id = db.Column(db.Integer, db.ForeignKey('customers.id'), nullable=False)
+    serv_req_id = db.Column(db.Integer, db.ForeignKey('service_requests.serv_req_id'), nullable=False)  # New field
     rating = db.Column(db.Float, nullable=False)
     review = db.Column(db.Text, nullable=True)
-
+    rating_status = db.Column(db.String(50), nullable=False)
     # Relationships
     service = db.relationship('Service', backref='ratings', lazy=True)
     professional = db.relationship('ServiceProfessional', backref='ratings', lazy=True)
     customer = db.relationship('Customer', backref='ratings', lazy=True)
+    service_request = db.relationship('ServiceRequest', backref='ratings', lazy=True)  # New relationship

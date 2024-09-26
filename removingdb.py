@@ -1,6 +1,6 @@
 from flask import Flask
 from application.database import db
-from application.models import Service, ServiceProfessional, Customer, ServiceRequest
+from application.models import Service, ServiceProfessional, Customer, ServiceRequest, Rating
 from datetime import datetime
 
 app = Flask(__name__)
@@ -16,8 +16,8 @@ with app.app_context():
         #Customer.query.delete()
         #ServiceProfessional.query.delete()
         #Service.query.delete()
-        ServiceRequest.query.delete()
-
+        #ServiceRequest.query.delete()
+        Rating.query.delete()
         # Commit the session to apply the changes
         db.session.commit()
 

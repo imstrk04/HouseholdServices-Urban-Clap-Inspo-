@@ -101,7 +101,7 @@
                     <tbody>
                         {% for customer in customers %}
                         <tr>
-                            <td>{{ customer.id }}</td>
+                            <td><a href="{{ url_for('viewcustomerprofile', id=customer.id) }}">{{ customer.id }}</a></td>
                             <td>{{ customer.email }}</td>
                             <td>{{ customer.full_name }}</td>
                             <td>{{ customer.address }}</td>
@@ -139,7 +139,7 @@
                     <tbody>
                         {% for professional in professionals %}
                         <tr>
-                            <td>{{ professional.id }}</td>
+                            <td><a href="{{ url_for('viewprofessionalprofile', id=professional.id) }}">{{ professional.id }}</a></td>
                             <td>{{ professional.full_name }}</td>
                             <td>{{ professional.experience }}</td>
                             <td>{{ professional.service.name }}</td>

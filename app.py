@@ -185,7 +185,26 @@ def assign_to_request(request_id):
 
     return redirect(url_for('admindashboard'))
 
+@app.route('/admindashboard/viewcustomerprofile/<int:id>', methods=["GET"])
+def viewcustomerprofile(id):
+    customer = Customer.query.get(id)
+    if customer:
+        return render_template("customerprofile.html", customer=customer, customer_id=id)
+    else:
+        return "Customer Not Found", 404
 
+@app.route('/admindashboard/viewprofessionalprofile/<int:id>', methods=["GET"])
+def viewprofessionalprofile(id):
+    professional = ServiceProfessional.query.get(id)
+    ratings = Rating.query.filter_by(professional_id = id).all()
+    if ratings:
+        average_rating = sum(rating.rating for rating in ratings) / len(ratings)
+    else:
+        average_rating = None
+    if professional:
+        return render_template("viewprofessionalprofile.html", professional=professional, professional_id=id, ratings = ratings, average_rating = average_rating)
+    else:
+        return "Professional Not Found", 404
 
 
 #-------------------------------------------- END OF ADMIN PAGES --------------------------------------------
@@ -304,7 +323,47 @@ def servicedetails(service_id, customer_id):
     # Render the page with service details and form
     return render_template('servicedetails.html', service=service, customer=customer)
 
+@app.route('/rate_service/<int:serv_req_id>', methods=['GET', 'POST'])
+def rate_service(serv_req_id):
+    service_request = ServiceRequest.query.get(serv_req_id)
+    if service_request is None:
+        return "Service Request not found", 404
 
+    professional = service_request.professional
+
+    if request.method == 'POST':
+        rating_value = float(request.form['rating'])
+        review_text = request.form.get('review', '')
+
+        existing_rating = Rating.query.filter_by(
+            service_id=service_request.service_id,
+            professional_id=service_request.professional_id,
+            customer_id=service_request.cust_id,
+            serv_req_id=serv_req_id
+        ).first()
+
+        if not existing_rating:
+            new_rating = Rating(
+                service_id=service_request.service_id,
+                professional_id=service_request.professional_id,
+                customer_id=service_request.cust_id,
+                serv_req_id=serv_req_id, 
+                rating=rating_value,
+                review=review_text,
+                rating_status='True'  # Setting rating_status to 'True'
+            )
+            db.session.add(new_rating)
+            db.session.commit()
+        else:
+            # If the rating already exists, update the rating and set status to 'True'
+            existing_rating.rating = rating_value
+            existing_rating.review = review_text
+            existing_rating.rating_status = 'True'
+            db.session.commit()
+
+        return redirect(url_for('customerhomepage', id=service_request.cust_id))
+
+    return render_template('rate_service.html', service_request=service_request)
 
 #-------------------------------------------- END OF CUSTOMER PAGES --------------------------------------------
 
@@ -392,8 +451,13 @@ def sphomepage(id):
 @app.route('/sphomepage/professionalprofile/<int:id>', methods=["GET"])
 def professionalprofile(id):
     professional = ServiceProfessional.query.get(id)
+    ratings = Rating.query.filter_by(professional_id = id).all()
+    if ratings:
+        average_rating = sum(rating.rating for rating in ratings) / len(ratings)
+    else:
+        average_rating = None
     if professional:
-        return render_template("spprofile.html", professional=professional, professional_id=id)
+        return render_template("spprofile.html", professional=professional, professional_id=id, ratings = ratings, average_rating = average_rating)
     else:
         return "Professional Not Found", 404
 

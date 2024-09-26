@@ -125,6 +125,7 @@
                         <th>Assigned Professional (If any)</th>
                         <th>For customer (If any)</th>
                         <th>Requested Date</th>
+                        <th>Completed Date</th>
                         <th>Status</th>
                     </tr>
                 </thead>
@@ -137,7 +138,19 @@
                             <td>{% if request.professional %} {{ request.professional.full_name }} {% else %} Not Assigned {% endif %}</td>
                             <td>{% if request.customer %} {{ request.customer.full_name }} {% else %} Not Assigned {% endif %}</td>
                             <td>{{ request.date_of_req.strftime('%Y-%m-%d') }}</td>
+                            <td>{{ request.date_of_completion.strftime('%Y-%m-%d') }}</td>
                             <td>{{ request.service_status.title() }}</td>
+                            <td>
+                                {% if request.service_status == 'completed' %}
+                                    {% if request.ratings | length > 0 and request.ratings[0].rating_status == 'True' %}
+                                        <span class="badge bg-success">Reviewed</span>
+                                    {% else %}
+                                        <a href="{{ url_for('rate_service', serv_req_id=request.serv_req_id) }}" class="btn btn-success">Rate Service</a>
+                                    {% endif %}
+                                {% endif %}
+                            </td>
+                            
+                            
                         </tr>
                     {% endif %}
                     {% endfor %}
