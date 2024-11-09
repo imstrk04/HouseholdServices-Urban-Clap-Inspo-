@@ -11,7 +11,6 @@ app = Flask(__name__)
 UPLOAD_FOLDER = 'uploads/'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
-# Configure the SQLite database
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///household_services.db'
 
 app.app_context().push()
@@ -29,8 +28,9 @@ def hello():
 def logout():
     return redirect(url_for('hello'))  
 
+## -------------------------------------------------------------------------------------------------------------------------
 
-# ADMIN PAGES
+# ------------------------------------------------------- ADMIN PAGES ------------------------------------------------------
 
 @app.route('/adminlogin', methods=['GET', 'POST'])
 def adminlogin():
@@ -85,17 +85,15 @@ def edit_service(id):
         new_base_price = request.form.get('base_price')
         new_time_required = request.form.get('time_required')
 
-        # Update the service details
         service.name = new_name
         service.base_price = new_base_price
         service.time_required = new_time_required
 
-        # Commit changes to the database
         try:
             db.session.commit()
             return redirect(url_for('admindashboard'))
         except Exception as e:
-            db.session.rollback()  # Rollback in case of error
+            db.session.rollback()
             return jsonify({'error': str(e)}), 500
     return jsonify({'error': 'Service Not Found'}), 404
 
@@ -179,7 +177,7 @@ def assign_to_request(request_id):
     service_request = ServiceRequest.query.get(request_id)
 
     service_request.professional_id = professional_id
-    service_request.service_status = 'assigned'  # Update the service status to "assigned"
+    service_request.service_status = 'assigned'
 
     db.session.commit()
 
@@ -205,11 +203,54 @@ def viewprofessionalprofile(id):
         return render_template("viewprofessionalprofile.html", professional=professional, professional_id=id, ratings = ratings, average_rating = average_rating)
     else:
         return "Professional Not Found", 404
+    
+@app.route('/admindashboard/adminsearchpage', methods=['GET', 'POST'])
+def adminsearchpage():
+    services = Service.query.all()  
+    professionals = [] 
+
+    if request.method == 'POST':
+        search_query = request.form.get('search_query', '').strip() 
+        service_filter = request.form.get('service_filter', '').strip()  
+
+        query = ServiceProfessional.query
+
+        if search_query:
+            query = query.filter(ServiceProfessional.full_name.contains(search_query))
+
+        if service_filter:
+
+            try:
+                service_filter_id = int(service_filter)
+                query = query.filter(ServiceProfessional.service_id == service_filter_id)
+            except ValueError:
+                print("Invalid service filter ID")
+
+        professionals = query.all()
+
+    return render_template('adminsearchpage.html', professionals=professionals, services=services)
+
+@app.route('/api/adminsummary', methods=['GET'])
+def admin_summary():
+    try:
+        summary_data = {
+            'services': get_total_services(),
+            'customers': get_total_customers(),
+            'professionals': get_total_professionals(),
+            'service_requests': get_total_service_requests()
+        }
+        return jsonify(summary_data), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/adminsummary', methods=['GET'])
+def render_admin_summary():
+    return render_template('adminsummary.html')
 
 
 #-------------------------------------------- END OF ADMIN PAGES --------------------------------------------
 
-# CUSTOMER PAGES
+# -------------------------------------------- CUSTOMER PAGES --------------------------------------------
 
 @app.route('/customersignup', methods = ['GET', 'POST'])
 def customer_signup_page():
@@ -291,7 +332,6 @@ def editcustomerprofile(id):
 
 @app.route('/service/<int:service_id>/<int:customer_id>', methods=['GET', 'POST'])
 def servicedetails(service_id, customer_id):
-    # Fetch the service and customer details
     service = Service.query.get(service_id)
     customer = Customer.query.get(customer_id)
     
@@ -299,13 +339,11 @@ def servicedetails(service_id, customer_id):
         return "Service or Customer Not Found", 404
     
     if request.method == 'POST':
-        # Handle form submission for new service request
         service_description = request.form.get('service_description')
         address = request.form.get('address')
         service_now = datetime.now()
         service_date = service_now.date()
 
-        # Create a new ServiceRequest instance
         new_request = ServiceRequest(
             service_id=service_id,
             cust_id=customer_id,
@@ -313,14 +351,11 @@ def servicedetails(service_id, customer_id):
             service_status="requested",
             remarks=service_description
         )
-
-        # Add the new service request to the database
         db.session.add(new_request)
         db.session.commit()
 
         return redirect(url_for('servicedetails', service_id=service_id, customer_id=customer_id))
 
-    # Render the page with service details and form
     return render_template('servicedetails.html', service=service, customer=customer)
 
 @app.route('/rate_service/<int:serv_req_id>', methods=['GET', 'POST'])
@@ -350,12 +385,11 @@ def rate_service(serv_req_id):
                 serv_req_id=serv_req_id, 
                 rating=rating_value,
                 review=review_text,
-                rating_status='True'  # Setting rating_status to 'True'
+                rating_status='True' 
             )
             db.session.add(new_rating)
             db.session.commit()
         else:
-            # If the rating already exists, update the rating and set status to 'True'
             existing_rating.rating = rating_value
             existing_rating.review = review_text
             existing_rating.rating_status = 'True'
@@ -365,9 +399,19 @@ def rate_service(serv_req_id):
 
     return render_template('rate_service.html', service_request=service_request)
 
+@app.route('/customerhomepage/<int:customer_id>/search_services', methods=['GET', 'POST'])
+def search_services(customer_id):
+    if request.method == 'POST':
+        pincode = request.form.get('pincode')
+        professionals = ServiceProfessional.query.filter_by(pincode=pincode).all()
+        return render_template('customer_search_results.html', professionals=professionals, customer_id=customer_id)
+    return render_template('customer_search_services.html', customer_id=customer_id)
+
+
+
 #-------------------------------------------- END OF CUSTOMER PAGES --------------------------------------------
 
-# SERVICE PROFESSIONAL PAGES
+# -------------------------------------------- SERVICE PROFESSIONAL PAGES --------------------------------------------
 @app.route('/spsignup', methods = ['GET', 'POST'])
 def spsignup():
     if request.method == 'GET':
@@ -492,6 +536,7 @@ def complete_service(request_id):
     return redirect(url_for('sphomepage', id = professional_id))
 
 #-------------------------------------------- END OF SERVICE PROFESSIONAL PAGES --------------------------------------------
+
 
 
 if __name__ == '__main__':

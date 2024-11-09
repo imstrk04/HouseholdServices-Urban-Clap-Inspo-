@@ -25,7 +25,7 @@ class ServiceProfessional(db.Model):
     full_name = db.Column(db.String(100), nullable=False)
     service_id = db.Column(db.Integer, db.ForeignKey('services.service_id'), nullable=False)
     experience = db.Column(db.Integer, nullable=False)
-    profile_doc = db.Column(db.String(200), nullable=False)  # Path to the uploaded profile PDF
+    profile_doc = db.Column(db.String(200), nullable=False)  
     address = db.Column(db.String(200), nullable=False)
     pincode = db.Column(db.String(10), nullable=False)
     date_created = db.Column(db.DateTime, default=date.today())
@@ -35,7 +35,6 @@ class ServiceProfessional(db.Model):
     
     @property
     def average_rating(self):
-        # Calculate the average rating from the associated ratings
         ratings = Rating.query.filter_by(professional_id=self.id).all()
         if ratings:
             return sum(r.rating for r in ratings) / len(ratings)
@@ -49,7 +48,6 @@ class Service(db.Model):
     time_required = db.Column(db.String(50), nullable=False)
     descriptions = db.Column(db.Text, nullable=True)
 
-    # Changed backref name to 'service_requests_list'
     service_requests_list = db.relationship('ServiceRequest', backref='service', cascade='all, delete-orphan', lazy=True)
 
 class ServiceRequest(db.Model):
@@ -63,10 +61,7 @@ class ServiceRequest(db.Model):
     service_status = db.Column(db.String(50), nullable=False)  # requested, assigned, completed
     remarks = db.Column(db.Text, nullable=True)
 
-    # Relationship to ServiceProfessional
     professional = db.relationship('ServiceProfessional', backref='service_requests', lazy=True)
-
-    # Relationship to Customer
     customer = db.relationship('Customer', backref='service_requests', lazy=True)
 
 class Rating(db.Model):
@@ -76,12 +71,24 @@ class Rating(db.Model):
     service_id = db.Column(db.Integer, db.ForeignKey('services.service_id'), nullable=False)
     professional_id = db.Column(db.Integer, db.ForeignKey('service_professionals.id'), nullable=False)
     customer_id = db.Column(db.Integer, db.ForeignKey('customers.id'), nullable=False)
-    serv_req_id = db.Column(db.Integer, db.ForeignKey('service_requests.serv_req_id'), nullable=False)  # New field
+    serv_req_id = db.Column(db.Integer, db.ForeignKey('service_requests.serv_req_id'), nullable=False) 
     rating = db.Column(db.Float, nullable=False)
     review = db.Column(db.Text, nullable=True)
     rating_status = db.Column(db.String(50), nullable=False)
-    # Relationships
+
     service = db.relationship('Service', backref='ratings', lazy=True)
     professional = db.relationship('ServiceProfessional', backref='ratings', lazy=True)
     customer = db.relationship('Customer', backref='ratings', lazy=True)
-    service_request = db.relationship('ServiceRequest', backref='ratings', lazy=True)  # New relationship
+    service_request = db.relationship('ServiceRequest', backref='ratings', lazy=True)  
+
+def get_total_services():
+    return Service.query.count()
+
+def get_total_customers():
+    return User.query.filter_by(role='Customer').count()
+
+def get_total_professionals():
+    return User.query.filter_by(role='ServiceProfessional').count()
+
+def get_total_service_requests():
+    return ServiceRequest.query.count()
