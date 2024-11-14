@@ -47,7 +47,7 @@ def adminlogin():
             return redirect(url_for("admindashboard"))
         else:
             print("Login failed")
-            return jsonify("WRONG LOGIN")
+            return render_template("loginerror.html")
 
 @app.route('/admindashboard', methods= ['GET'])
 def admindashboard():
@@ -292,7 +292,7 @@ def customerlogin():
         if customer.password == password:
             return redirect(url_for('customerhomepage', id = customer.id))
         else:
-            return jsonify({'error': 'Invalid Credentials'}), 401
+            return render_template("loginerror.html")
         
 
 @app.route('/customerhomepage/<int:id>', methods=['GET'])
@@ -480,7 +480,7 @@ def splogin():
             else:
                 return jsonify({"Error": f"Your account is in {professional.status} status"}), 403
         else:
-            return jsonify({"Error": "Invalid Credentials"}), 401
+            return render_template("loginerror.html")
 
 @app.route('/splogin/rejectedsp', methods = ['GET'])
 def rejectedsp():
