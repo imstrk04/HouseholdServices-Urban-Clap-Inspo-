@@ -187,7 +187,7 @@ def assign_to_request(request_id):
 def viewcustomerprofile(id):
     customer = Customer.query.get(id)
     if customer:
-        return render_template("customerprofile.html", customer=customer, customer_id=id)
+        return render_template("viewcustomerprofile.html", customer=customer, customer_id=id)
     else:
         return "Customer Not Found", 404
 
