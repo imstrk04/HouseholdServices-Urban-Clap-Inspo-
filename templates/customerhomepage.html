@@ -105,6 +105,12 @@
                             <td>{% if request.customer %} {{ request.customer.full_name }} {% else %} Not Assigned {% endif %}</td>
                             <td>{{ request.date_of_req.strftime('%Y-%m-%d') }}</td>
                             <td>{{ request.service_status.title() }}</td>
+                            <td>
+                                {% if request.service_status != 'completed' %}
+                                    <a href="{{ url_for('edit_service_request', serv_req_id=request.serv_req_id) }}" class="btn btn-warning">Edit</a>
+                                {% endif %}
+                            </td>
+                            
                         </tr>
                     {% endif %}
                     {% endfor %}

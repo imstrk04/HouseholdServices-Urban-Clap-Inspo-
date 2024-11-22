@@ -407,6 +407,30 @@ def search_services(customer_id):
         return render_template('customer_search_results.html', professionals=professionals, customer_id=customer_id)
     return render_template('customer_search_services.html', customer_id=customer_id)
 
+@app.route('/edit_service_request/<int:serv_req_id>', methods=['GET', 'POST'])
+def edit_service_request(serv_req_id):
+    service_request = ServiceRequest.query.get(serv_req_id)
+    if not service_request:
+        return "Service Request not found", 404
+
+    if request.method == 'POST':
+        # Update fields
+        new_date = request.form.get('new_date')
+        remarks = request.form.get('remarks')
+
+        try:
+            if new_date:
+                service_request.date_of_req = datetime.strptime(new_date, '%Y-%m-%d').date()
+            if remarks:
+                service_request.remarks = remarks
+
+            db.session.commit()
+            return redirect(url_for('customerhomepage', id=service_request.cust_id))
+        except Exception as e:
+            return f"An error occurred: {e}"
+
+    return render_template('edit_service_request.html', service_request=service_request)
+
 
 
 #-------------------------------------------- END OF CUSTOMER PAGES --------------------------------------------
