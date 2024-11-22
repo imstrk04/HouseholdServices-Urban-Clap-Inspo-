@@ -247,6 +247,24 @@ def admin_summary():
 def render_admin_summary():
     return render_template('adminsummary.html')
 
+@app.route('/delete_professional/<int:id>', methods=['POST'])
+def admin_delete_professional(id):
+    professional = ServiceProfessional.query.get_or_404(id)
+    
+    # Ensure that the professional can be safely deleted (optional checks)
+    if professional.status == 'accepted':
+        return redirect(url_for('admindashboard'))
+    
+    try:
+        db.session.delete(professional)
+        db.session.commit()
+
+    except Exception as e:
+        db.session.rollback()
+    
+    return redirect(url_for('admindashboard'))
+
+
 
 #-------------------------------------------- END OF ADMIN PAGES --------------------------------------------
 
