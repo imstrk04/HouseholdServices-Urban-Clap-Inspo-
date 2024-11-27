@@ -176,10 +176,30 @@
                                 </div>
                             </td>
                             <td>
-                                <form action="{{ url_for('admin_delete_professional', id=professional.id) }}" method="POST" style="display:inline;">
-                                    <button type="submit" class="btn btn-danger">Block</button>
-                                </form>
+                                <div class="btn-group" role="group" aria-label="Professional status actions">
+                                    {% if professional.status == 'requested' %}
+                                        <form action="{{ url_for('approve_professional', id=professional.id) }}" method="POST" style="display:inline;">
+                                            <button type="submit" class="btn btn-success">Approve</button>
+                                        </form>
+                                        <form action="{{ url_for('reject_professional', id=professional.id) }}" method="POST" style="display:inline;">
+                                            <button type="submit" class="btn btn-danger">Reject</button>
+                                        </form>
+                                    {% elif professional.status == 'accepted' %}
+                                        
+                                        <form action="{{ url_for('block_professional', id=professional.id) }}" method="POST" style="display:inline;">
+                                            <button type="submit" class="btn btn-warning">Block</button>
+                                        </form>
+                                    {% elif professional.status == 'rejected' %}
+                                        <span class="badge bg-danger">Blocked</span>
+                                        <form action="{{ url_for('unblock_professional', id=professional.id) }}" method="POST" style="display:inline;">
+                                            <button type="submit" class="btn btn-primary">Unblock</button>
+                                        </form>
+                                    {% else %}
+                                        <span class="badge bg-info">{{ professional.status.title() }}</span>
+                                    {% endif %}
+                                </div>
                             </td>
+                            
                             
                         </tr>
                         {% else %}

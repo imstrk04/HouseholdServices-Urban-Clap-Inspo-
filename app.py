@@ -247,23 +247,33 @@ def admin_summary():
 def render_admin_summary():
     return render_template('adminsummary.html')
 
-@app.route('/delete_professional/<int:id>', methods=['POST'])
-def admin_delete_professional(id):
+@app.route('/block_professional/<int:id>', methods=['POST'])
+def block_professional(id):
     professional = ServiceProfessional.query.get_or_404(id)
     
-    # Ensure that the professional can be safely deleted (optional checks)
-    if professional.status == 'accepted':
-        return redirect(url_for('admindashboard'))
+    professional.status = 'rejected'
     
     try:
-        db.session.delete(professional)
         db.session.commit()
-
     except Exception as e:
         db.session.rollback()
+        return "Error while blocking professional", 500
     
     return redirect(url_for('admindashboard'))
 
+@app.route('/unblock_professional/<int:id>', methods=['POST'])
+def unblock_professional(id):
+    professional = ServiceProfessional.query.get_or_404(id)
+    
+    professional.status = 'accepted'
+    
+    try:
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        return "Error while unblocking professional", 500
+    
+    return redirect(url_for('admindashboard'))
 
 
 #-------------------------------------------- END OF ADMIN PAGES --------------------------------------------
